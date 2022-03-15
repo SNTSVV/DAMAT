@@ -14,20 +14,20 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
     return 0;
 
   if (MUTATION == -2) {
-   _FAQAS_fmCoverage(fm->ID);
+    _FAQAS_fmCoverage(fm->ID);
 
-   #ifndef __cplusplus
-   char *faqas_coverage_file = getenv("FAQAS_COVERAGE_FILE");
-   FILE* coverage_file_pointer = fopen(faqas_coverage_file, "ab+");
-   #endif
+#ifndef __cplusplus
+    char *faqas_coverage_file = getenv("FAQAS_COVERAGE_FILE");
+    FILE *coverage_file_pointer = fopen(faqas_coverage_file, "ab+");
+#endif
 
     fprintf(coverage_file_pointer, "fm.ID: %d\n", fm->ID);
-    return 0;
 
-    #ifndef __cplusplus
+#ifndef __cplusplus
     fclose(coverage_file_pointer);
-    #endif
+#endif
 
+    return 0;
   }
 
   if (MUTATION == -3) {
@@ -43,27 +43,25 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
 
 #ifdef _FAQAS_SINGLE_MUTATION
 
-  if (global_mutation_counter > 0){
+  if (global_mutation_counter > 0) {
     _FAQAS_operator_coverage(0);
     global_mutation_counter = global_mutation_counter + 1;
     return 0;
   }
 
 #endif
-
 
 #ifdef _FAQAS_MUTATION_PROBABILITY
 
   float random_check = ((float)rand() * (100)) / RAND_MAX;
 
-  if (PROBABILITY < 0 || random_check > PROBABILITY){
+  if (PROBABILITY < 0 || random_check > PROBABILITY) {
     _FAQAS_operator_coverage(0);
     global_mutation_counter = global_mutation_counter + 1;
     return 0;
   }
 
 #endif
-
 
   int pos = _FAQAS_selectItem();
   int data_pos = _FAQAS_INITIAL_PADDING + pos;
@@ -97,33 +95,33 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
     intermediate = (intermediate | row);
   }
 
-  switch (fm->items[pos].type){
+  switch (fm->items[pos].type) {
 
-  case BIN:{
+  case BIN: {
     unsigned long long fitToSize = (unsigned long long)intermediate;
     memcpy(&valueBin, &fitToSize, sizeof(valueBin));
-    } break;
+  } break;
 
-  case INT:{
+  case INT: {
     unsigned int fitToSize = (unsigned int)intermediate;
     memcpy(&valueInt, &fitToSize, sizeof(valueInt));
-    } break;
+  } break;
 
-  case DOUBLE:{
+  case DOUBLE: {
     unsigned long long int fitToSize = (unsigned long long int)intermediate;
     memcpy(&valueDouble, &fitToSize, sizeof(valueDouble));
-    } break;
+  } break;
 
-  case FLOAT:{
+  case FLOAT: {
     unsigned long int fitToSize = (unsigned long int)intermediate;
     memcpy(&valueFloat, &fitToSize, sizeof(valueFloat));
-    } break;
+  } break;
 
-  case LONG:{
+  case LONG: {
     unsigned long int fitToSize = (unsigned long int)intermediate;
     memcpy(&valueLong, &fitToSize, sizeof(valueLong));
-    } break;
-}
+  } break;
+  }
 
   //
   // Mutate the data
@@ -131,10 +129,10 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
 
   MutationOperator *OP = &(fm->items[pos].operators[op]);
 
-  //start of the switch case:
+  // start of the switch case:
   MutationType fault_operator = OP->type;
 
-  switch(fault_operator){
+  switch (fault_operator) {
 
   case HV: {
 
@@ -216,7 +214,7 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
 
     if (State == 0) {
       int ii = 0;
-      for (ii = 0; ii < numberOfBits; ii = ii + 1){
+      for (ii = 0; ii < numberOfBits; ii = ii + 1) {
         avoidInfinite = 0;
         flipped = valueBin;
 
@@ -225,21 +223,20 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
           mask = FAQAS_pow_substitute(2, randomPosition);
           flipped = valueBin | mask;
           avoidInfinite = avoidInfinite + 1;
-          if (avoidInfinite == numberOfBits * 5){
+          if (avoidInfinite == numberOfBits * 5) {
             success = 0;
             break;
           }
         }
         valueBin = flipped;
       }
-    }
-    else if (State == 1) {
+    } else if (State == 1) {
       int ii = 0;
 
-      for (ii = 0; ii < numberOfBits; ii = ii + 1){
+      for (ii = 0; ii < numberOfBits; ii = ii + 1) {
         avoidInfinite = 0;
         flipped = valueBin;
-        while (flipped == valueBin){
+        while (flipped == valueBin) {
           randomPosition = (rand() % (Max - Min + 1)) + Min;
           mask = FAQAS_pow_substitute(2, randomPosition);
           flipped = valueBin & ~mask;
@@ -251,23 +248,22 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
         }
         valueBin = flipped;
       }
-    }
-    else {
+    } else {
       int ii = 0;
 
       for (ii = 0; ii < numberOfBits; ii = ii + 1) {
         flipped = valueBin;
         avoidInfinite = 0;
 
-        while (flipped == valueBin){
+        while (flipped == valueBin) {
           randomPosition = (rand() % (Max - Min + 1)) + Min;
           mask = FAQAS_pow_substitute(2, randomPosition);
           flipped = valueBin & ~mask;
-          if (flipped == valueBin){
+          if (flipped == valueBin) {
             flipped = valueBin | mask;
           }
           avoidInfinite = avoidInfinite + 1;
-          if (avoidInfinite == numberOfBits * 5){
+          if (avoidInfinite == numberOfBits * 5) {
             success = 0;
             break;
           }
@@ -277,85 +273,73 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
     }
     _FAQAS_operator_coverage(success);
     _FAQAS_mutated = 1;
-  }break;
+  } break;
 
   case VOR: {
 
     if (fm->items[pos].type == INT) {
-      if (valueInt >= OP->min && valueInt <= OP->max ) {
+      if (valueInt >= OP->min && valueInt <= OP->max) {
         if (opt == 0) {
           valueInt = OP->min - OP->delta;
           _FAQAS_operator_coverage(1);
-        }
-        else if (opt == 1) {
+        } else if (opt == 1) {
           valueInt = OP->max + OP->delta;
           _FAQAS_operator_coverage(1);
-        }
-        else {
+        } else {
           // FIXME: throw an error
         }
-      }
-      else {
+      } else {
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
     else if (fm->items[pos].type == LONG) {
-      if (valueLong >= OP->min && valueLong <= OP->max ) {
+      if (valueLong >= OP->min && valueLong <= OP->max) {
         if (opt == 0) {
           valueLong = OP->min - OP->delta;
           _FAQAS_operator_coverage(1);
-        }
-        else if (opt == 1) {
+        } else if (opt == 1) {
           valueLong = OP->max + OP->delta;
           _FAQAS_operator_coverage(1);
-        }
-        else {
+        } else {
           // FIXME: throw an error
         }
-      }
-      else {
+      } else {
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
     else if (fm->items[pos].type == DOUBLE) {
-      if (valueDouble >= OP->min && valueDouble <= OP->max ) {
+      if (valueDouble >= OP->min && valueDouble <= OP->max) {
         if (opt == 0) {
           valueDouble = OP->min - OP->delta;
           _FAQAS_operator_coverage(1);
-        }
-        else if (opt == 1) {
+        } else if (opt == 1) {
           valueDouble = OP->max + OP->delta;
           _FAQAS_operator_coverage(1);
-        }
-        else {
+        } else {
           // FIXME: throw an error
         }
-      }
-      else {
+      } else {
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
     else if (fm->items[pos].type == FLOAT) {
-      if (valueFloat >= OP->min && valueFloat <= OP->max ) {
+      if (valueFloat >= OP->min && valueFloat <= OP->max) {
         if (opt == 0) {
           valueFloat = OP->min - OP->delta;
           _FAQAS_operator_coverage(1);
-        }
-        else if (opt == 1) {
+        } else if (opt == 1) {
           valueFloat = OP->max + OP->delta;
           _FAQAS_operator_coverage(1);
-        }
-        else {
+        } else {
           // FIXME: throw an error
         }
-      }
-      else {
+      } else {
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
@@ -372,8 +356,7 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
 
       if (upper == lower) {
         valueInt = upper;
-      }
-      else if (upper < lower) {
+      } else if (upper < lower) {
         fvor_success = 0;
       }
 
@@ -402,11 +385,9 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
       if (upper == lower) {
         valueLong = upper;
         // FIXME: throw a warning
-      }
-      else if (upper < lower) {
+      } else if (upper < lower) {
         fvor_success = 0;
-      }
-      else {
+      } else {
         long int randomNum = valueLong;
         int avoidInfinite = 0;
 
@@ -431,12 +412,10 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
       if (upper == lower) {
         valueDouble = upper;
         // FIXME: throw a warning
-      }
-      else if (upper < lower) {
+      } else if (upper < lower) {
         // FIXME: throw an error
         fvor_success = 0;
-      }
-      else {
+      } else {
         double randomNum = valueDouble;
         int avoidInfinite = 0;
 
@@ -460,12 +439,10 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
       if (upper == lower) {
         valueFloat = upper;
         // FIXME: throw a warning
-      }
-      else if (upper < lower) {
+      } else if (upper < lower) {
         // FIXME: throw an error
         fvor_success = 0;
-      }
-      else {
+      } else {
         float randomNum = valueFloat;
         int avoidInfinite = 0;
 
@@ -484,55 +461,49 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
     _FAQAS_operator_coverage(fvor_success);
     _FAQAS_mutated = 1;
 
-
-
-  } break;//end
+  } break; // end
 
   case VAT: {
 
-    if (fm->items[pos].type == INT){
-      if (valueInt <= OP->threshold){
+    if (fm->items[pos].type == INT) {
+      if (valueInt <= OP->threshold) {
         valueInt = OP->threshold + OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
-    else if (fm->items[pos].type == LONG){
-      if (valueLong <= OP->threshold){
+    else if (fm->items[pos].type == LONG) {
+      if (valueLong <= OP->threshold) {
         valueLong = OP->threshold + OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
-    else if (fm->items[pos].type == DOUBLE){
-      if (valueDouble <= OP->threshold){
+    else if (fm->items[pos].type == DOUBLE) {
+      if (valueDouble <= OP->threshold) {
         valueDouble = (double)OP->threshold + OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
     else if (fm->items[pos].type == FLOAT) {
-      if (valueFloat <= (float)OP->threshold){
+      if (valueFloat <= (float)OP->threshold) {
         valueFloat = (float)OP->threshold + OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else{
-        //value already above threshold
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
@@ -541,100 +512,92 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
 
   case FVAT: {
 
-    if (fm->items[pos].type == INT){
-      if (valueInt > OP->threshold){
+    if (fm->items[pos].type == INT) {
+      if (valueInt > OP->threshold) {
         valueInt = OP->threshold - OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
-        _FAQAS_operator_coverage(0);
-      }
-      _FAQAS_mutated = 1;
-    }
-
-    else if (fm->items[pos].type == LONG){
-      if (valueLong > OP->threshold){
-        valueLong = OP->threshold - OP->delta;
-        _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
-        _FAQAS_operator_coverage(0);
-      }
-      _FAQAS_mutated = 1;
-    }
-
-    else if (fm->items[pos].type == DOUBLE){
-      if (valueDouble > OP->threshold){
-        valueDouble = OP->threshold - OP->delta;
-        _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
-        _FAQAS_operator_coverage(0);
-      }
-      _FAQAS_mutated = 1;
-    }
-
-    else if (fm->items[pos].type == FLOAT){
-      if (valueFloat > OP->threshold){
-        valueFloat = OP->threshold - OP->delta;
-        _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
-        _FAQAS_operator_coverage(0);
-      }
-      _FAQAS_mutated = 1;
-    }
-
-  } break;//FINAL PAR
-
-  case VBT: {
-
-    if (fm->items[pos].type == INT){
-      if (valueInt >= OP->threshold){
-        valueInt = OP->threshold - OP->delta;
-        _FAQAS_operator_coverage(1);
-      }
-      else{
-        //value already below threshold
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
     else if (fm->items[pos].type == LONG) {
-      if (valueLong >= OP->threshold){
+      if (valueLong > OP->threshold) {
         valueLong = OP->threshold - OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else{
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
     else if (fm->items[pos].type == DOUBLE) {
-      if (valueDouble >= (double)OP->threshold){
-        valueDouble = (double)OP->threshold - (double)OP->delta;
+      if (valueDouble > OP->threshold) {
+        valueDouble = OP->threshold - OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already below threshold
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
     else if (fm->items[pos].type == FLOAT) {
-      if (valueFloat >= (float)OP->threshold){
+      if (valueFloat > OP->threshold) {
+        valueFloat = OP->threshold - OP->delta;
+        _FAQAS_operator_coverage(1);
+      } else {
+        // value already above threshold
+        _FAQAS_operator_coverage(0);
+      }
+      _FAQAS_mutated = 1;
+    }
+
+  } break; // FINAL PAR
+
+  case VBT: {
+
+    if (fm->items[pos].type == INT) {
+      if (valueInt >= OP->threshold) {
+        valueInt = OP->threshold - OP->delta;
+        _FAQAS_operator_coverage(1);
+      } else {
+        // value already below threshold
+        _FAQAS_operator_coverage(0);
+      }
+      _FAQAS_mutated = 1;
+    }
+
+    else if (fm->items[pos].type == LONG) {
+      if (valueLong >= OP->threshold) {
+        valueLong = OP->threshold - OP->delta;
+        _FAQAS_operator_coverage(1);
+      } else {
+        _FAQAS_operator_coverage(0);
+      }
+      _FAQAS_mutated = 1;
+    }
+
+    else if (fm->items[pos].type == DOUBLE) {
+      if (valueDouble >= (double)OP->threshold) {
+        valueDouble = (double)OP->threshold - (double)OP->delta;
+        _FAQAS_operator_coverage(1);
+      } else {
+        // value already below threshold
+        _FAQAS_operator_coverage(0);
+      }
+      _FAQAS_mutated = 1;
+    }
+
+    else if (fm->items[pos].type == FLOAT) {
+      if (valueFloat >= (float)OP->threshold) {
         valueFloat = (float)OP->threshold - OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else{
-        //value already below threshold
+      } else {
+        // value already below threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
@@ -643,82 +606,78 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
 
   case FVBT: {
 
-    if (fm->items[pos].type == INT){
-      if (valueInt < OP->threshold){
+    if (fm->items[pos].type == INT) {
+      if (valueInt < OP->threshold) {
         valueInt = OP->threshold + OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
-    else if (fm->items[pos].type == LONG){
-      if (valueLong < OP->threshold){
+    else if (fm->items[pos].type == LONG) {
+      if (valueLong < OP->threshold) {
         valueLong = OP->threshold + OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
-    else if (fm->items[pos].type == DOUBLE){
-      if (valueDouble < OP->threshold){
+    else if (fm->items[pos].type == DOUBLE) {
+      if (valueDouble < OP->threshold) {
         valueDouble = OP->threshold + OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
-    else if (fm->items[pos].type == FLOAT){
-      if (valueFloat < OP->threshold){
+    else if (fm->items[pos].type == FLOAT) {
+      if (valueFloat < OP->threshold) {
         valueFloat = OP->threshold + OP->delta;
         _FAQAS_operator_coverage(1);
-      }
-      else {
-        //value already above threshold
+      } else {
+        // value already above threshold
         _FAQAS_operator_coverage(0);
       }
       _FAQAS_mutated = 1;
     }
 
-  } break;//FINAL PAR
+  } break; // FINAL PAR
 
   case IV: {
     int IVsuccess = 0;
 
     if (fm->items[pos].type == INT) {
-      if (valueInt != OP->value){
+      if (valueInt != OP->value) {
         valueInt = OP->value;
         IVsuccess = 1;
       }
     }
 
     else if (fm->items[pos].type == LONG) {
-      if (valueLong != OP->value){
-        valueLong = (long) OP->value;
+      if (valueLong != OP->value) {
+        valueLong = (long)OP->value;
         IVsuccess = 1;
       }
     }
 
     else if (fm->items[pos].type == DOUBLE) {
-      if (valueDouble != OP->value){
+      if (valueDouble != OP->value) {
         valueDouble = (double)OP->value;
         IVsuccess = 1;
       }
     }
 
     else if (fm->items[pos].type == FLOAT) {
-      if (valueFloat != OP->value){
+      if (valueFloat != OP->value) {
         valueFloat = (float)OP->value;
         IVsuccess = 1;
       }
@@ -730,22 +689,22 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
 
   case SS: {
 
-    if (fm->items[pos].type == INT){
+    if (fm->items[pos].type == INT) {
       int shift = (int)OP->delta;
       valueInt = (int)valueInt + shift;
     }
 
-    else if (fm->items[pos].type == LONG){
+    else if (fm->items[pos].type == LONG) {
       long int shift = (long int)OP->delta;
       valueLong = (long int)valueLong + shift;
     }
 
-    else if (fm->items[pos].type == DOUBLE){
+    else if (fm->items[pos].type == DOUBLE) {
       double shift = (double)OP->delta;
       valueDouble = (double)valueDouble + shift;
     }
 
-    else if (fm->items[pos].type == FLOAT){
+    else if (fm->items[pos].type == FLOAT) {
       float shift = (float)OP->delta;
       valueFloat = (float)valueFloat + shift;
     }
@@ -764,8 +723,7 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
 
       if (upper == lower) {
         valueInt = upper;
-      }
-      else if (upper < lower) {
+      } else if (upper < lower) {
         inv_success = 0;
       }
 
@@ -794,11 +752,9 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
       if (upper == lower) {
         valueLong = upper;
         // FIXME: throw a warning
-      }
-      else if (upper < lower) {
+      } else if (upper < lower) {
         inv_success = 0;
-      }
-      else {
+      } else {
         long int randomNum = valueLong;
         int avoidInfinite = 0;
 
@@ -823,12 +779,10 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
       if (upper == lower) {
         valueDouble = upper;
         // FIXME: throw a warning
-      }
-      else if (upper < lower) {
+      } else if (upper < lower) {
         // FIXME: throw an error
         inv_success = 0;
-      }
-      else {
+      } else {
         double randomNum = valueDouble;
         int avoidInfinite = 0;
 
@@ -852,12 +806,10 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
       if (upper == lower) {
         valueFloat = upper;
         // FIXME: throw a warning
-      }
-      else if (upper < lower) {
+      } else if (upper < lower) {
         // FIXME: throw an error
         inv_success = 0;
-      }
-      else {
+      } else {
         float randomNum = valueFloat;
         int avoidInfinite = 0;
 
@@ -875,7 +827,7 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
     }
     _FAQAS_operator_coverage(inv_success);
     _FAQAS_mutated = 1;
-  } break; //end
+  } break; // end
 
   case ASA: {
 
@@ -927,7 +879,7 @@ int _FAQAS_mutate(BUFFER_TYPE *data, FaultModel *fm) {
     _FAQAS_operator_coverage(1);
   } break;
 
-} //end of switch
+  } // end of switch
 
   if (_FAQAS_mutated != 1) {
     return 0;
