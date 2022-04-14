@@ -62,7 +62,8 @@ while IFS="," read -r p || [ -n "$p" ];do
   EXEC_RET_CODE=$?
 
 ###############################################################################
-#the exec return code should be 0 if the test case passes, 1 if the test case fails and 124 in case of a timeout
+# the exec return code should be 0 if the test case passes, 1 if the test case
+# fails and 124 in case of a timeout
 
 
   mutant_end_time=$(($(date +%s%N)/1000000))
@@ -89,8 +90,7 @@ while IFS="," read -r p || [ -n "$p" ];do
 
 
 ###############################################################################
-
-	#create a different coverage file for every test
+# create a different coverage file for every test
 
 	NEW_COVERAGE_FILE=$mutant_dir/coverage_"$tst".csv
 	cp $coverage_file $NEW_COVERAGE_FILE
